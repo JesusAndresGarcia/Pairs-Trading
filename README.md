@@ -1,10 +1,6 @@
-# 📊 Estrategia de Arbitraje Estadístico
-
 ## Pairs Trading Multiactivo con Cointegración y Filtros de Kalman
 
----
-
-## 🧠 Descripción General del Proyecto
+# Descripción General del Proyecto
 
 Este proyecto implementa una **estrategia de arbitraje estadístico** basada en portafolios multiactivo con reversión a la media. A diferencia del pairs trading tradicional, se trabaja con **grupos de 3 activos** que comparten una tendencia estocástica común.
 
@@ -18,7 +14,7 @@ La estrategia combina:
 
 ---
 
-## 🎯 Objetivos
+## Objetivos
 
 * Identificar grupos de activos cointegrados
 * Construir un portafolio con reversión a la media
@@ -28,7 +24,7 @@ La estrategia combina:
 
 ---
 
-## 🏗️ Estructura del Proyecto
+## Estructura del Proyecto
 
 ```id="estructura1"
 project/
@@ -49,7 +45,7 @@ project/
 
 ---
 
-## 📈 Descripción de la Estrategia
+## Descripción de la Estrategia
 
 La estrategia construye un portafolio con reversión a la media definido como:
 
@@ -64,7 +60,7 @@ Donde:
 
 ---
 
-### 🔹 Componentes Clave
+### Componentes Clave
 
 ### 1. Cointegración
 
@@ -100,7 +96,7 @@ Donde:
 
 ---
 
-## 📊 Datos
+## Datos
 
 * Fuente: Yahoo Finance (`yfinance`)
 * Frecuencia: diaria
@@ -109,7 +105,7 @@ Donde:
 
 ---
 
-## ⚙️ Instalación
+## Instalación
 
 Clonar repositorio:
 
@@ -126,7 +122,7 @@ pip install -r requirements.txt
 
 ---
 
-## 🚀 Uso
+## Uso
 
 Ejecutar flujo principal:
 
@@ -142,7 +138,7 @@ jupyter notebook
 
 ---
 
-## 💸 Supuestos de Costos
+## Supuestos de Costos
 
 | Parámetro        | Valor                |
 | ---------------- | -------------------- |
@@ -153,7 +149,7 @@ jupyter notebook
 
 ---
 
-## 📉 Backtesting
+## Backtesting
 
 Incluye:
 
@@ -164,7 +160,7 @@ Incluye:
 
 ---
 
-## 📊 Métricas de Desempeño
+## Métricas de Desempeño
 
 * Retorno acumulado
 * Sharpe ratio
@@ -173,7 +169,7 @@ Incluye:
 
 ---
 
-## 📌 Hallazgos Principales
+## Hallazgos Principales
 
 * La cointegración **no siempre está presente**, incluso con alta correlación
 * Los Filtros de Kalman permiten un modelo **adaptativo y realista**
@@ -182,7 +178,7 @@ Incluye:
 
 ---
 
-## ⚠️ Limitaciones
+## Limitaciones
 
 * Cointegración débil o inestable
 * Sensibilidad a parámetros del Kalman (Q y R)
@@ -191,7 +187,7 @@ Incluye:
 
 ---
 
-## 🔧 Mejoras Futuras
+## Mejoras Futuras
 
 * Extender a portafolios de 4–5 activos
 * Reestimar Johansen de forma rolling
@@ -201,7 +197,7 @@ Incluye:
 
 ---
 
-## 📊 Dashboard (Opcional)
+## Dashboard
 
 ```bash id="dashboard1"
 streamlit run dashboard/app.py
@@ -209,7 +205,7 @@ streamlit run dashboard/app.py
 
 ---
 
-## 📚 Dependencias
+## Dependencias
 
 * numpy
 * pandas
@@ -219,12 +215,12 @@ streamlit run dashboard/app.py
 
 ---
 
-## 👨‍💻 Autor
+## Autor
 
-Jesús García
+Jesús García-Casarrubios
 
 ---
 
-## 📄 Licencia
+## Licencia
 
 Proyecto con fines académicos.
