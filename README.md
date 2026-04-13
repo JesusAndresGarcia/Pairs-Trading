@@ -1,6 +1,6 @@
 ## Pairs Trading Multiactivo con Cointegración y Filtros de Kalman
 
-# Descripción General del Proyecto
+# Descripción General del Proyecto 
 
 Este proyecto implementa una **estrategia de arbitraje estadístico** basada en portafolios multiactivo con reversión a la media. A diferencia del pairs trading tradicional, se trabaja con **grupos de 3 activos** que comparten una tendencia estocástica común.
 
