@@ -1,0 +1,14 @@
+import yfinance as yf
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+from statsmodels.tsa.stattools import adfuller
+from statsmodels.tsa.vector_ar.vecm import coint_johansen
+import matplotlib.pyplot as plt
+
+tickers = ["XLE", "XOP", "OIH"]
+
+data = yf.download(tickers, start="2010-01-01")["Close"]
+data = np.log(data).dropna()
+
+print("Shape:", data.shape)
