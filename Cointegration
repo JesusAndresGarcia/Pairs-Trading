@@ -29,7 +29,7 @@ print("¿Pasa?:", eg_pvalue < 0.05)
 # Johansen
 result = coint_johansen(train, det_order=0, k_ar_diff=2)
 
-print("\n--- JOHANSEN ---")
+print("\nJOHANSEN")
 for i, stat in enumerate(result.lr1):
     print(f"r <= {i}: stat={stat:.4f}, cv95={result.cvt[i,1]}")
 
