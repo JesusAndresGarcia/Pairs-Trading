@@ -1,0 +1,89 @@
+# Filtro de Kalman (VECM Residual SDA)
+class DualKalmanSDA:
+    def __init__(self, n_assets, initial_beta):
+        # Filtro 1: Estimación de Pesos (Beta)
+        self.beta = initial_beta  
+        self.P1 = np.eye(n_assets) * 1e-2 
+        self.Q1 = np.eye(n_assets) * 1e-5 
+        self.R1 = 1e-3                   
+        
+        # Filtro 2: Varianza del Residuo VECM
+        # mu_s ahora representa el valor esperado del residuo (debe tender a 0)
+        self.mu_s = 0.0
+        self.P2 = 1.0
+        self.Q2 = 1e-8
+        self.R2 = 1e-3
+        
+    def update(self, price_vector):
+        """
+        Paso secuencial: Los residuos del VECM alimentan la generación del Z-Score
+        """
+        # Filtro 1: Actualización de Pesos Cointegrados
+        P1_prior = self.P1 + self.Q1
+        y_obs = 0 
+        y_pred = np.dot(price_vector, self.beta)
+        error_vecm = y_obs - y_pred # VECM
+        
+        S1 = np.dot(price_vector, np.dot(P1_prior, price_vector.T)) + self.R1
+        K1 = np.dot(P1_prior, price_vector.T) / S1
+        
+        self.beta = self.beta + K1 * error_vecm
+        self.P1 = (np.eye(len(self.beta)) - np.outer(K1, price_vector)) @ P1_prior
+        
+        # Filtro 2: Normalización del Residuo (Z-Score Construction)
+        current_spread = np.dot(price_vector, self.beta)
+        
+        # Predicción de la varianza del residuo
+        P2_prior = self.P2 + self.Q2
+        
+        # El "Residuo del VECM" es la desviación respecto a la media de equilibrio (mu_s)
+        # mu_s se actualiza para absorber cualquier sesgo persistente (drift)
+        innovation_residue = current_spread - self.mu_s
+        
+        S2 = P2_prior + self.R2 # Varianza total del residuo
+        K2 = P2_prior / S2
+        
+        # Media latente del residuo
+        self.mu_s = self.mu_s + K2 * innovation_residue
+        self.P2 = (1 - K2) * P2_prior
+        
+        std_residue = np.sqrt(S2)
+        z_score = innovation_residue / std_residue
+        
+        return self.beta.copy(), current_spread, z_score
+
+# Procesamiento Secuencial (Data Test)
+assets_trading = ["XLE", "XOP", "OIH"]
+test_data = test[assets_trading].values
+
+# Inicializar con el beta de Johansen
+k_system = DualKalmanSDA(n_assets=3, initial_beta=beta_normalized)
+
+results = []
+for t in range(len(test_data)):
+    b, s, z = k_system.update(test_data[t])
+    results.append({
+        'beta': b,
+        'spread': s,
+        'z_score': z
+    })
+
+df_kalman = pd.DataFrame(results, index=test.index)
+
+
+# Visualizar los filtros
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10), sharex=True)
+
+ax1.plot(df_kalman['spread'], color='blue', lw=1, label='Dynamic Spread (Filter 1)')
+ax1.set_title("Filtro 1: Evolución del Portafolio Mean-Reverting")
+ax1.legend()
+
+ax2.plot(df_kalman['z_score'], color='green', lw=1, label='Z-Score (Filter 2)')
+ax2.axhline(2, color='red', linestyle='--', alpha=0.7)
+ax2.axhline(-2, color='red', linestyle='--', alpha=0.7)
+ax2.axhline(0, color='black', lw=0.5)
+ax2.set_title("Filtro 2: Señales de Trading en Tiempo Real")
+ax2.legend()
+
+plt.tight_layout()
+plt.show()
