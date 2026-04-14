@@ -1,0 +1,15 @@
+# Verificación de señales generadas
+conteo_senales = df_kalman['signal'].value_counts()
+print("Distribución de Posiciones:")
+print(conteo_senales)
+
+# Calcular retornos finales
+df_kalman['port_ret'] = df_kalman['spread'].diff().fillna(0)
+df_kalman['strat_ret'] = df_kalman['signal'].shift(1) * df_kalman['port_ret']
+
+# Aplicar costos aproximados (0.125%)
+# Solo cobramos comisión cuando la señal CAMBIA (abrir o cerrar)
+df_kalman['trades'] = df_kalman['signal'].diff().fillna(0).abs()
+df_kalman['net_ret'] = df_kalman['strat_ret'] - (df_kalman['trades'] * 0.00125)
+
+print(f"\nRetorno Neto Acumulado: {df_kalman['net_ret'].sum():.4f}")
