@@ -7,7 +7,6 @@ adf_final = adfuller(spread_train)
 print("Engle-Granger:", eg_pvalue)
 print("ADF spread:", adf_final[1])
 
-
 # Retornos
 df_kalman['port_ret'] = df_kalman['spread'].diff().fillna(0)
 df_kalman['strat_ret'] = df_kalman['signal'].shift(1) * df_kalman['port_ret']
@@ -16,11 +15,19 @@ df_kalman['strat_ret'] = df_kalman['signal'].shift(1) * df_kalman['port_ret']
 df_kalman['trades'] = df_kalman['signal'].diff().fillna(0).abs()
 df_kalman['net_ret'] = df_kalman['strat_ret'] - (df_kalman['trades'] * 0.00125)
 
-# Métricas
+# Retorno acumulado
 cum_return = df_kalman['net_ret'].sum()
 
+# Sharpe
 sharpe = df_kalman['net_ret'].mean() / df_kalman['net_ret'].std()
 sharpe_anual = sharpe * np.sqrt(252)
+
+# Sortino (downside risk)
+downside_returns = df_kalman['net_ret'][df_kalman['net_ret'] < 0]
+downside_std = downside_returns.std()
+
+sortino = df_kalman['net_ret'].mean() / downside_std if downside_std > 0 else 0
+sortino_anual = sortino * np.sqrt(252)
 
 # Drawdown
 cum_curve = (1 + df_kalman['net_ret']).cumprod()
@@ -28,7 +35,13 @@ rolling_max = cum_curve.cummax()
 drawdown = (cum_curve - rolling_max) / rolling_max
 max_drawdown = drawdown.min()
 
-# Prints
+# Calmar
+# Retorno anual
+ret_anual = df_kalman['net_ret'].mean() * 252
+calmar = ret_anual / abs(max_drawdown) if max_drawdown != 0 else 0
+
 print("Retorno acumulado:", round(cum_return, 4))
 print("Sharpe anualizado:", round(sharpe_anual, 4))
+print("Sortino anualizado:", round(sortino_anual, 4))
 print("Max Drawdown:", round(max_drawdown, 4))
+print("Calmar Ratio:", round(calmar, 4))
