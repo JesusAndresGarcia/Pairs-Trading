@@ -1,0 +1,64 @@
+# Optimización y generación de señales
+def optimize_thresholds(z_scores, spread_returns):
+    """
+    Realiza un Grid Search para encontrar los umbrales de entrada y salida
+    que maximizan el Sharpe Ratio en el periodo de entrenamiento.
+    """
+    best_sharpe = -np.inf
+    best_params = (2.0, 0.5)
+    
+    
+    for z_entry in np.linspace(.3, 2, 15):
+        for z_exit in np.linspace(0, .2, 5):
+            pos = 0
+            rets = []
+            for z, r in zip(z_scores, spread_returns):
+                if pos == 0 and abs(z) > z_entry:
+                    pos = -np.sign(z)
+                elif pos != 0 and abs(z) < z_exit:
+                    pos = 0
+                rets.append(pos * r)
+            
+            std_rets = np.std(rets)
+            sharpe = np.mean(rets) / std_rets if std_rets > 0 else 0
+            
+            if sharpe > best_sharpe:
+                best_sharpe = sharpe
+                best_params = (z_entry, z_exit)
+                
+    return best_params
+
+def generate_signals_vecm(df_kalman, z_entry, z_exit):
+    """
+    Genera señales de trading basadas en el residuo del VECM normalizado (Z-score).
+    """
+    signals = pd.Series(0, index=df_kalman.index)
+    current_pos = 0
+    
+    for i in range(1, len(df_kalman)):
+        z = df_kalman['z_score'].iloc[i]
+        
+        if current_pos == 0:
+            if z < -z_entry:
+                current_pos = 1   # Long Spread
+            elif z > z_entry:
+                current_pos = -1  # Short Spread
+        
+        elif current_pos == 1 and z > -z_exit:
+            current_pos = 0
+        elif current_pos == -1 and z < z_exit:
+            current_pos = 0
+            
+        signals.iloc[i] = current_pos
+    return signals
+
+# EJECUTAR
+
+# 1. Optimización
+z_in, z_out = optimize_thresholds(df_kalman['z_score'], df_kalman['spread'].diff().fillna(0))
+
+# 2. Aplicación de señales
+df_kalman['signal'] = generate_signals_vecm(df_kalman, z_in, z_out)
+
+print(f"Proceso Completado con Éxito")
+print(f"Parámetros óptimos encontrados: Entrada={z_in:.2f}, Salida={z_out:.2f}")
