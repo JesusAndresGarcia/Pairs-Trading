@@ -1,0 +1,80 @@
+# Split
+n = len(data)
+
+train = data.iloc[:int(0.6*n)]
+test  = data.iloc[int(0.6*n):int(0.8*n)]
+val   = data.iloc[int(0.8*n):]
+
+print("Train/Test/Val:", len(train), len(test), len(val))
+
+# Correlación
+print("\nMatriz de Correlación:")
+print(train.corr())
+
+# Engle-Granger
+def engle_granger(y, X):
+    X = sm.add_constant(X)
+    model = sm.OLS(y, X).fit()
+    residuals = model.resid
+    return adfuller(residuals)[1]
+
+y_eg = train["XLE"]
+X_eg = train[["XOP", "OIH"]]
+
+eg_pvalue = engle_granger(y_eg, X_eg)
+
+print(f"\nEngle-Granger p-value: {eg_pvalue:.4f}")
+print("¿Pasa?:", eg_pvalue < 0.05)
+
+# Johansen
+result = coint_johansen(train, det_order=0, k_ar_diff=2)
+
+print("\n--- JOHANSEN ---")
+for i, stat in enumerate(result.lr1):
+    print(f"r <= {i}: stat={stat:.4f}, cv95={result.cvt[i,1]}")
+
+# Beta
+beta = result.evec[:, 0]
+beta = beta / beta[0]
+
+print("\nBeta:", beta)
+
+# Spread
+spread_train = train @ beta
+spread_train = spread_train - spread_train.mean()
+
+# ADF
+adf = adfuller(spread_train)
+
+print("\nADF p-value:", adf[1])
+print("¿Estacionario?:", adf[1] < 0.05)
+
+# Gráfica
+plt.figure(figsize=(12,6))
+plt.plot(spread_train, label="Spread")
+plt.axhline(0, linestyle="--", color="black")
+plt.title("Spread Mean-Reverting")
+plt.legend()
+plt.show()
+
+
+# Convertir a log-precios
+log_prices = np.log(data)
+
+# Limpiar datos
+log_prices = log_prices.dropna()
+
+
+# Gráfica de los activios individuales
+plt.figure(figsize=(12,6))
+
+for col in log_prices.columns:
+    plt.plot(log_prices.index, log_prices[col], label=col)
+
+plt.title("Log-Precios de Activos (XLE, XOP, OIH)")
+plt.xlabel("Fecha")
+plt.ylabel("Log-Precio")
+plt.legend()
+plt.grid(True, alpha=0.3)
+
+plt.show()
